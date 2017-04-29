@@ -1,0 +1,109 @@
+körschema för presentation
+
+* ha en katalog “opkoko-serverless-apex”
+
+Serverless
+—————
+* skapa en  funktion - bookService
+serverless create -t aws-nodejs --path bookService --name bookService
+
+* Öppna “opkoko-serverless-apex” i IntelliJ och titta på de genererade filerna
+
+* sätt region till eu-west-1 och stage till dev
+
+* öppna terminal i intelliJ
+eventuellt cd bookService
+
+* provkör lokalt
+serverless invoke local --function hello
+
+* deploy (1min50s första gången)  - kan börja med Apex nu
+sls deploy
+
+
+Apex (ha en till tab i intelliJ (command))
+——-
+* skapa katalog för servicen
+mkdir bookServiceApex
+cd bookServiceApex
+
+* skapa servicen - följ wizarden  - ge den namnet apexBookService
+apex init
+
+* titta igenom vad som genererats
+
+* deplya funktionen - vet inte om man kan invoka lokalt (märk hur snabbt det går)
+apex deploy
+
+* provkör funktionen
+apex invoke hello
+
+* vill ha den i dev-miljön
+cp project.json project.dev.json
+apex deploy --env dev
+
+* visa uppdatering av funktion - editera koden och deploya om
+apex invoke hello --env dev
+
+
+Serverless igen
+————————
+* provkör igen mot den deployade funktionen
+sls invoke --function hello
+
+* uppdatera funktionen och deploya om - tar ca 30 sekunder
+sls deploy
+sls invoke --function hello
+
+* Lägg till ett APIWG - path kan vara vad som helst
+events:   - http:       path: hello       method: get
+
+* kör curl och visa i browsern
+
+
+Apex igen
+—————
+* kör lite versionshantering. Uppdatera koden deploya.
+* Får en “tag” på releasen
+apex deploy --env dev
+apex deploy --env prod
+apex list
+
+* låt “dev” alltid peka den senaste versionen. Uppdatera “prod” när koden är redo,
+aws lambda create-alias --function-name bookServiceApex_hello --name dev --function-version \$LATEST
+aws lambda update-alias --function-name bookServiceApex_hello --name prod --function-version 15
+
+* visa att det går att sätta variabler i de olika miljöerna.
+"environment": {   "ENVIRONMENT": "prod" }
+
+
+Serverless igen
+———————
+
+* visa miljö- och versionshantering
+* skriv in en siffra i message och deploya till dev och prod
+sls deploy       //dev ver +1
+sis deploy -s prod //dev version +1
+sis deploy       // dev version + 1 igen
+
+sls info -s prod
+sls logs -f hello -s prod
+
+
+* visa skillnaden i funktionernas namn - får två olika funktioner om man kollar i AWS consolen
+bookService-prod-hello
+bookService-dev-hello
+
+* lista alla funktioner som har “book" - får tre svar
+aws lambda list-functions | grep book
+
+
+
+städa undan
+——————
+sls remove         <——— tar bort alla resurser
+apex list
+apex delete         <——— tar bara bort funktionen, måste delete resurser i AWS-consolen
+
+
+
